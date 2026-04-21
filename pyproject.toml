@@ -3,14 +3,12 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lab_2_asi"
+name = "asi-projekt"
+version = "0.1.0"
 readme = "README.md"
-dynamic = ["dependencies", "version"]
 
 [project.scripts]
-lab-2-asi = "lab_2_asi.__main__:main"
-
-[project.entry-points."kedro.hooks"]
+asi-projekt = "asi_projekt.__main__:main"
 
 [project.optional-dependencies]
 docs = [
@@ -31,48 +29,16 @@ dev = [
     "ruff~=0.1.8"
 ]
 
-[tool.setuptools.dynamic]
-dependencies = {file = "requirements.txt"}
-version = {attr = "lab_2_asi.__version__"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-namespaces = false
+[tool.setuptools]
+packages = ["asi_projekt"]
+package-dir = {"" = "src"}
 
 [tool.kedro]
-package_name = "lab_2_asi"
+package_name = "asi_projekt"
 project_name = "LAB_2_ASI"
 kedro_init_version = "0.19.9"
 tools = ['None']
 example_pipeline = "False"
 source_dir = "src"
-
-[tool.pytest.ini_options]
-addopts = """
---cov-report term-missing \
---cov src/lab_2_asi -ra"""
-
-[tool.coverage.report]
-fail_under = 0
-show_missing = true
-exclude_lines = ["pragma: no cover", "raise NotImplementedError"]
-
-[tool.ruff.format]
-docstring-code-format = true
-
-[tool.ruff]
-line-length = 88
-show-fixes = true
-select = [
-    "F",   # Pyflakes
-    "W",   # pycodestyle
-    "E",   # pycodestyle
-    "I",   # isort
-    "UP",  # pyupgrade
-    "PL",  # Pylint
-    "T201", # Print Statement
-]
-ignore = ["E501"]  # Ruff format takes care of line-too-long
-
 [tool.kedro_telemetry]
-project_id = "035cb5e9cac34cddab4f483faae412a7"
+project_id = "b856ff1dcc6d4597947659d915d8e58a"

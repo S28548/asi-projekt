@@ -21,21 +21,30 @@ def preprocess(data: pd.DataFrame, parameters: Dict[str, Any]) -> pd.DataFrame:
 
     Args:
         data: Surowe dane z SQLite.
-        parameters: Parametry pipeline (nieużywane tutaj).
+        parameters: Parametry pipeline.
 
     Returns:
         Oczyszczony DataFrame.
     """
     logger.info("Start preprocessingu danych")
 
-    data = data.drop(['PoolQC', 'MiscFeature', 'Alley', 'Fence'], axis=1, errors='ignore')
+    # 🔽 parametry z YAML
+    drop_columns = parameters["preprocessing"]["drop_columns"]
+    max_area = parameters["preprocessing"]["gr_liv_area_max"]
 
-    if 'GrLivArea' in data.columns:
+    # usuń kolumny
+    data = data.drop(drop_columns, axis=1, errors='ignore')
+
+    # usuń outliery
+    if "GrLivArea" in data.columns:
         before = len(data)
-        data = data[data['GrLivArea'] < 4000]
+        data = data[data["GrLivArea"] < max_area]
         logger.info(f"Usunięto {before - len(data)} outlierów")
 
-    data = data.select_dtypes(include=['number'])
+    # tylko liczby
+    data = data.select_dtypes(include=["number"])
+
+    # fill NA
     data = data.fillna(0)
 
     logger.info(f"Dane po preprocessingu: {data.shape}")
@@ -93,8 +102,13 @@ def train_model(
     logger.info("Trenowanie modelu")
 
     model = RandomForestRegressor(
+        n_estimators=parameters["model"]["n_estimators"],
+        max_depth=parameters["model"]["max_depth"],
         random_state=parameters["model"]["random_state"]
     )
+
+    X_train = np.array(X_train).copy()
+    y_train = np.array(y_train).copy()
 
     model.fit(X_train, y_train)
 
@@ -102,29 +116,17 @@ def train_model(
     return model
 
 
-def evaluate_model(
-    model: RandomForestRegressor,
-    X_val: pd.DataFrame,
-    y_val: pd.Series
-) -> Dict[str, float]:
-    """
-    Oblicza metryki modelu (RMSE).
-
-    Args:
-        model: Wytrenowany model.
-        X_val: Dane walidacyjne (cechy).
-        y_val: Dane walidacyjne (target).
-
-    Returns:
-        Słownik z metryką RMSE.
-    """
+def evaluate_model(model, X_val, y_val):
     logger.info("Ewaluacja modelu")
+
+    import numpy as np
+
+    X_val = np.array(X_val).copy()
+    y_val = np.array(y_val).copy()
 
     preds = model.predict(X_val)
     rmse = np.sqrt(mean_squared_error(y_val, preds))
 
     logger.info(f"RMSE: {rmse:.2f}")
 
-    return {
-        "rmse": float(rmse)
-    }
+    return {"rmse": rmse}
