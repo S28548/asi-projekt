@@ -1,9 +1,21 @@
+# Core
 pandas==2.2.2
 numpy==1.26.4
 scikit-learn==1.4.2
+
+# Visualization
 matplotlib==3.8.4
 seaborn==0.13.2
+
+# Jupyter
 jupyter==1.0.0
 notebook==7.2.1
-python-dotenv==1.0.1
+
+# Kedro
 kedro==0.19.9
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Experiment tracking
+wandb>=0.25.1
