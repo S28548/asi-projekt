@@ -55,3 +55,4 @@ dist/
 # ========================
 .pytest_cache/
 .coverage
+*.log
