@@ -1,13 +1,20 @@
 import logging
+import os
 from typing import Dict, Any, Tuple
 
 import pandas as pd
 import numpy as np
+import wandb
+from dotenv import load_dotenv
+
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 
+load_dotenv()
+
 logger = logging.getLogger(__name__)
+
 
 
 def preprocess(data: pd.DataFrame, parameters: Dict[str, Any]) -> pd.DataFrame:
@@ -116,17 +123,35 @@ def train_model(
     return model
 
 
-def evaluate_model(model, X_val, y_val):
-    logger.info("Ewaluacja modelu")
+def evaluate_and_log(model, X_val, y_val, parameters):
+    logger.info("Ewaluacja modelu + W&B")
 
-    import numpy as np
+    # --- W&B INIT ---
+    run = wandb.init(
+        project=os.getenv("WANDB_PROJECT"),
+        entity=os.getenv("WANDB_ENTITY"),
+        name=f"rf-{parameters['model']['n_estimators']}-{parameters['model']['max_depth']}",
+        config=parameters
+    )
 
+    # --- dane ---
     X_val = np.array(X_val).copy()
     y_val = np.array(y_val).copy()
 
     preds = model.predict(X_val)
-    rmse = np.sqrt(mean_squared_error(y_val, preds))
+
+    rmse = float(np.sqrt(mean_squared_error(y_val, preds)))
+
+    metrics = {
+        "rmse": rmse
+    }
+
+    # --- log ---
+    wandb.log(metrics)
+
+    # --- zakończenie ---
+    wandb.finish()
 
     logger.info(f"RMSE: {rmse:.2f}")
 
-    return {"rmse": rmse}
+    return metrics
